@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StockVision — 실시간 주식 지수 대시보드</title>
+  <meta name="description" content="코스피, 코스닥, 나스닥, S&P500 실시간 주식 지수 대시보드" />
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/style.css" />
+
+  <style>
+    /* Inline critical CSS for above-the-fold content */
+    .page-loader {
+      position: fixed; inset: 0;
+      background: #080c18;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+    .page-loader.hidden { opacity: 0; visibility: hidden; }
+    .loader-inner {
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
+    }
+    .loader-logo {
+      font-size: 36px;
+      animation: loaderPulse 1s ease-in-out infinite alternate;
+    }
+    @keyframes loaderPulse {
+      from { transform: scale(0.9); opacity: 0.7; }
+      to   { transform: scale(1.1); opacity: 1; }
+    }
+    .loader-text {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 13px; font-weight: 600; letter-spacing: 3px;
+      background: linear-gradient(135deg, #00d4ff, #7c3aed);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+    }
+    .loader-bar {
+      width: 160px; height: 3px; background: rgba(255,255,255,0.08);
+      border-radius: 2px; overflow: hidden;
+    }
+    .loader-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00d4ff, #7c3aed);
+      border-radius: 2px;
+      animation: loaderFill 1.2s ease forwards;
+    }
+    @keyframes loaderFill {
+      from { width: 0%; }
+      to   { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Page Loader -->
+<div class="page-loader" id="pageLoader">
+  <div class="loader-inner">
+    <div class="loader-logo">📈</div>
+    <div class="loader-text">StockVision</div>
+    <div class="loader-bar">
+      <div class="loader-bar-fill"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Ticker Tape ─────────────────────────────────────────── -->
+<div class="ticker-wrapper">
+  <div class="ticker-label">LIVE</div>
+  <div class="ticker-scroll">
+    <div id="ticker-content">
+      <!-- Populated by JavaScript -->
+    </div>
+  </div>
+</div>
+
+<!-- ── Header ─────────────────────────────────────────────── -->
+<header class="site-header">
+  <div class="logo-area">
+    <div class="logo-icon">📊</div>
+    <div class="logo-text">
+      <div class="logo-title">StockVision</div>
+      <div class="logo-subtitle">Global Market Dashboard</div>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <!-- Market Status -->
+    <div class="market-status-group">
+      <span class="market-label">KRX</span>
+      <span class="market-status-badge closed" id="market-krx">—</span>
+    </div>
+    <div class="market-status-group">
+      <span class="market-label">US</span>
+      <span class="market-status-badge closed" id="market-us">—</span>
+    </div>
+
+    <!-- Clock -->
+    <div class="header-clock">
+      <div id="current-date">—</div>
+      <div id="live-clock">00:00:00</div>
+    </div>
+  </div>
+</header>
+
+<!-- ── Main Content ────────────────────────────────────────── -->
+<main class="main-container">
+
+  <!-- Summary Bar -->
+  <div class="summary-bar">
+    <div class="summary-item" id="summary-kospi">
+      <span class="summary-name">🇰🇷 코스피</span>
+      <span class="summary-price">—</span>
+      <span class="summary-change">—</span>
+    </div>
+    <div class="summary-item" id="summary-kosdaq">
+      <span class="summary-name">🇰🇷 코스닥</span>
+      <span class="summary-price">—</span>
+      <span class="summary-change">—</span>
+    </div>
+    <div class="summary-item" id="summary-nasdaq">
+      <span class="summary-name">🇺🇸 나스닥</span>
+      <span class="summary-price">—</span>
+      <span class="summary-change">—</span>
+    </div>
+    <div class="summary-item" id="summary-sp500">
+      <span class="summary-name">🇺🇸 S&amp;P 500</span>
+      <span class="summary-price">—</span>
+      <span class="summary-change">—</span>
+    </div>
+  </div>
+
+  <!-- Section Header -->
+  <div class="section-header">
+    <div class="section-title">글로벌 주요 지수</div>
+    <div class="update-status">
+      <div class="countdown-container">
+        <span class="countdown-label">다음 업데이트</span>
+        <div class="countdown-timer">
+          <span id="countdown">60</span>
+          <span class="countdown-label">초</span>
+          <div class="countdown-track">
+            <div id="countdown-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Grid -->
+  <div class="charts-grid">
+
+    <!-- ── KOSPI ─────────────────────────────────────────── -->
+    <div class="chart-card" id="card-kospi">
+      <div class="card-header">
+        <div class="card-index-info">
+          <div class="card-flag-name">
+            <span class="index-flag">🇰🇷</span>
+            <span class="index-name-kr">코스피</span>
+          </div>
+          <div class="index-name-en">KOSPI Index</div>
+          <div class="index-market-tag">KRX • 종합주가지수</div>
+        </div>
+        <div class="card-price-section">
+          <div class="current-price" id="kospi-price">—</div>
+          <div class="price-changes">
+            <span class="change-value" id="kospi-change">—</span>
+            <span class="change-percent" id="kospi-change-percent">—</span>
+          </div>
+          <span class="status-badge" id="kospi-badge">—</span>
+        </div>
+      </div>
+      <div class="card-stats">
+        <div class="stat-item">
+          <span class="stat-label">당일 고가</span>
+          <span class="stat-value" id="kospi-high">—</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">당일 저가</span>
+          <span class="stat-value" id="kospi-low">—</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">거래량</span>
+          <span class="stat-value" id="kospi-vol">—</span>
+        </div>
+      </div>
+      <div class="chart-tabs">
+        <div class="tab-group">
+          <button class="tab-btn" data-range="1H">1H</button>
+          <button class="tab-btn active" data-range="2H">2H</button>
+          <button class="tab-btn" data-range="1D">1D</button>
+          <button class="tab-btn" data-range="1W">1W</button>
+        </div>
+        <span class="chart-type-label">LINE CHART</span>
+      </div>
+      <div class="chart-container">
+        <canvas id="chart-kospi"></canvas>
+      </div>
+    </div>
+
+    <!-- ── KOSDAQ ─────────────────────────────────────────── -->
+    <div class="chart-card" id="card-kosdaq">
+      <div class="card-header">
+        <div class="card-index-info">
+          <div class="card-flag-name">
+            <span class="index-flag">🇰🇷</span>
+            <span class="index-name-kr">코스닥</span>
+          </div>
+          <div class="index-name-en">KOSDAQ Index</div>
+          <div class="index-market-tag">KRX • 코스닥시장</div>
+        </div>
+        <div class="card-price-section">
+          <div class="current-price" id="kosdaq-price">—</div>
+          <div class="price-changes">
+            <span class="change-value" id="kosdaq-change">—</span>
+            <span class="change-percent" id="kosdaq-change-percent">—</span>
+          </div>
+          <span class="status-badge" id="kosdaq-badge">—</span>
+        </div>
+      </div>
+      <div class="card-stats">
+        <div class="stat-item">
+          <span class="stat-label">당일 고가</span>
+          <span class="stat-value" id="kosdaq-high">—</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">당일 저가</span>
+          <span class="stat-value" id="kosdaq-low">—</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">거래량</span>
+          <span class="stat-value" id="kosdaq-vol">—</span>
+        </div>
+      </div>
+      <div class="chart-tabs">
+        <div class="tab-group">
+          <button class="tab-btn" data-range="1H">1H</button>
+          <button class="tab-btn active" data-range="2H">2H</button>
+          <button class="tab-btn" data-range="1D">1D</button>
+          <button class="tab-btn" data-range="1W">1W</button>
+        </div>
+        <span class="chart-type-label">LINE CHART</span>
+      </div>
+      <div class="chart-container">
+        <canvas id="chart-kosdaq"></canvas>
+      </div>
+    </div>
+
+    <!-- ── NASDAQ ─────────────────────────────────────────── -->
+    <div class="chart-card" id="card-nasdaq">
+      <div class="card-header">
+        <div class="card-index-info">
+          <div class="card-flag-name">
+            <span class="index-flag">🇺🇸</span>
+            <span class="index-name-kr">나스닥</span>
+          </div>
+          <div class="index-name-en">NASDAQ Composite</div>
+          <div class="index-market-tag">NASDAQ • 기술주 중심</div>
+        </div>
+        <div class="card-price-section">
+          <div class="current-price" id="nasdaq-price">—</div>
+          <div class="price-changes">
+            <span class="change-value" id="nasdaq-change">—</span>
+            <span class="change-percent" id="nasdaq-change-percent">—</span>
+          </div>
+          <span class="status-badge" id="nasdaq-badge">—</span>
+        </div>
+      </div>
+      <div class="card-stats">
+        <div class="stat-item">
+          <span class="stat-label">당일 고가</span>
+          <span class="stat-value" id="nasdaq-high">—</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">당일 저가</span>
+          <span class="stat-value" id="nasdaq-low">—</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">거래량</span>
+          <span class="stat-value" id="nasdaq-vol">—</span>
+        </div>
+      </div>
+      <div class="chart-tabs">
+        <div class="tab-group">
+          <button class="tab-btn" data-range="1H">1H</button>
+          <button class="tab-btn active" data-range="2H">2H</button>
+          <button class="tab-btn" data-range="1D">1D</button>
+          <button class="tab-btn" data-range="1W">1W</button>
+        </div>
+        <span class="chart-type-label">LINE CHART</span>
+      </div>
+      <div class="chart-container">
+        <canvas id="chart-nasdaq"></canvas>
+      </div>
+    </div>
+
+    <!-- ── S&P 500 ─────────────────────────────────────────── -->
+    <div class="chart-card" id="card-sp500">
+      <div class="card-header">
+        <div class="card-index-info">
+          <div class="card-flag-name">
+            <span class="index-flag">🇺🇸</span>
+            <span class="index-name-kr">S&amp;P 500</span>
+          </div>
+          <div class="index-name-en">S&amp;P 500 Index</div>
+          <div class="index-market-tag">NYSE • 대형주 500</div>
+        </div>
+        <div class="card-price-section">
+          <div class="current-price" id="sp500-price">—</div>
+          <div class="price-changes">
+            <span class="change-value" id="sp500-change">—</span>
+            <span class="change-percent" id="sp500-change-percent">—</span>
+          </div>
+          <span class="status-badge" id="sp500-badge">—</span>
+        </div>
+      </div>
+      <div class="card-stats">
+        <div class="stat-item">
+          <span class="stat-label">당일 고가</span>
+          <span class="stat-value" id="sp500-high">—</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">당일 저가</span>
+          <span class="stat-value" id="sp500-low">—</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">거래량</span>
+          <span class="stat-value" id="sp500-vol">—</span>
+        </div>
+      </div>
+      <div class="chart-tabs">
+        <div class="tab-group">
+          <button class="tab-btn" data-range="1H">1H</button>
+          <button class="tab-btn active" data-range="2H">2H</button>
+          <button class="tab-btn" data-range="1D">1D</button>
+          <button class="tab-btn" data-range="1W">1W</button>
+        </div>
+        <span class="chart-type-label">LINE CHART</span>
+      </div>
+      <div class="chart-container">
+        <canvas id="chart-sp500"></canvas>
+      </div>
+    </div>
+
+  </div><!-- /charts-grid -->
+
+</main>
+
+<!-- ── Footer ─────────────────────────────────────────────── -->
+<footer class="site-footer">
+  <p class="footer-text">
+    <span>StockVision</span> &nbsp;|&nbsp; 데이터는 데모 목적의 시뮬레이션입니다. 실제 투자에 활용하지 마세요.
+    &nbsp;|&nbsp; 매 1분마다 자동 업데이트
+  </p>
+</footer>
+
+<!-- ── Update Notification ────────────────────────────────── -->
+<div id="update-notif">
+  🔄 &nbsp;시세가 업데이트되었습니다
+</div>
+
+<!-- Scripts -->
+<script src="js/mockData.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/app.js"></script>
+
+<script>
+  // Hide loader after content is ready
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.getElementById('pageLoader').classList.add('hidden');
+    }, 1200);
+  });
+</script>
+
+</body>
+</html>
