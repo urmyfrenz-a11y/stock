@@ -205,6 +205,38 @@ body::after {
   gap: 12px;
 }
 
+/* Site logo image — wrapped in a light pill so white-bg PNG looks clean on dark header */
+.logo-img-wrap {
+  background: rgba(255,255,255,0.96);
+  border-radius: 10px;
+  padding: 5px 12px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.35);
+  transition: box-shadow 0.3s, transform 0.3s;
+}
+
+.logo-img-wrap:hover {
+  box-shadow: 0 4px 20px rgba(0,212,255,0.3);
+  transform: scale(1.03);
+}
+
+.site-logo {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* Vertical divider between logo and title */
+.logo-divider {
+  width: 1px;
+  height: 36px;
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.15), transparent);
+  margin: 0 8px;
+}
+
+/* Keep old logo-icon style in case it's referenced elsewhere */
 .logo-icon {
   width: 38px;
   height: 38px;

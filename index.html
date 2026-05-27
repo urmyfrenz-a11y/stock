@@ -29,9 +29,15 @@
     .loader-inner {
       display: flex; flex-direction: column; align-items: center; gap: 16px;
     }
-    .loader-logo {
-      font-size: 36px;
+    .loader-logo-img {
+      height: 52px;
+      width: auto;
+      object-fit: contain;
       animation: loaderPulse 1s ease-in-out infinite alternate;
+      background: rgba(255,255,255,0.95);
+      border-radius: 12px;
+      padding: 8px 20px;
+      box-shadow: 0 4px 24px rgba(0,212,255,0.25);
     }
     @keyframes loaderPulse {
       from { transform: scale(0.9); opacity: 0.7; }
@@ -65,8 +71,8 @@
 <!-- Page Loader -->
 <div class="page-loader" id="pageLoader">
   <div class="loader-inner">
-    <div class="loader-logo">📈</div>
-    <div class="loader-text">StockVision</div>
+    <img src="logo.png" alt="Simplio" class="loader-logo-img" />
+    <div class="loader-text">Stock Dashboard</div>
     <div class="loader-bar">
       <div class="loader-bar-fill"></div>
     </div>
@@ -86,10 +92,13 @@
 <!-- ── Header ─────────────────────────────────────────────── -->
 <header class="site-header">
   <div class="logo-area">
-    <div class="logo-icon">📊</div>
+    <div class="logo-img-wrap">
+      <img src="logo.png" alt="Simplio Logo" class="site-logo" />
+    </div>
+    <div class="logo-divider"></div>
     <div class="logo-text">
-      <div class="logo-title">StockVision</div>
-      <div class="logo-subtitle">Global Market Dashboard</div>
+      <div class="logo-title">Stock Dashboard</div>
+      <div class="logo-subtitle">Global Market Overview</div>
     </div>
   </div>
 
