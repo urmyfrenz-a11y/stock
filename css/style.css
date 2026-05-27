@@ -801,6 +801,30 @@ body::after {
   .chart-container     { height: 180px; }
 }
 
+/* ── Data Source Badge ───────────────────────────────────────── */
+.data-source-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+
+.data-source-badge.live {
+  background: var(--positive-bg);
+  color: var(--positive);
+  border: 1px solid rgba(34,197,94,0.3);
+  animation: openPulse 2s ease-in-out infinite;
+}
+
+.data-source-badge.demo {
+  background: rgba(245,158,11,0.1);
+  color: #f59e0b;
+  border: 1px solid rgba(245,158,11,0.25);
+}
+
 /* ── Utility ─────────────────────────────────────────────────── */
 .positive { color: var(--positive); }
 .negative { color: var(--negative); }

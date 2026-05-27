@@ -170,28 +170,43 @@ function updateDataPoint(indexKey) {
 }
 
 /**
- * Get current stats for an index
+ * Get current stats for an index.
+ * 실제 시세가 있으면(liveQuote) 그 값을 우선 사용합니다.
  */
 function getIndexStats(indexKey) {
   const store = dataStore[indexKey];
-  const currentPrice = store.prices[store.prices.length - 1];
-  const change = currentPrice - store.prevClose;
+  const q     = store.liveQuote; // api.js 가 채워주는 실제 시세
+
+  if (q) {
+    // ── 실제 데이터 경로 ──────────────────────────────
+    return {
+      current:       q.price,
+      prevClose:     q.prevClose ?? store.prevClose,
+      change:        q.change,
+      changePercent: q.changePercent,
+      dayHigh:       q.dayHigh,
+      dayLow:        q.dayLow,
+      volume:        q.volume,
+      marketState:   q.marketState,
+      isPositive:    q.change >= 0,
+    };
+  }
+
+  // ── Mock 폴백 (서버 미연결 / 시장 휴장 시) ──────────
+  const currentPrice  = store.prices[store.prices.length - 1];
+  const change        = currentPrice - store.prevClose;
   const changePercent = (change / store.prevClose) * 100;
 
-  const dayPrices = store.prices;
-  const dayHigh = Math.max(...dayPrices);
-  const dayLow = Math.min(...dayPrices);
-  const volume = Math.floor(Math.random() * 900000 + 100000);
-
   return {
-    current: currentPrice,
-    prevClose: store.prevClose,
+    current:       currentPrice,
+    prevClose:     store.prevClose,
     change,
     changePercent,
-    dayHigh,
-    dayLow,
-    volume,
-    isPositive: change >= 0,
+    dayHigh:       Math.max(...store.prices),
+    dayLow:        Math.min(...store.prices),
+    volume:        Math.floor(Math.random() * 900_000 + 100_000),
+    marketState:   'CLOSED',
+    isPositive:    change >= 0,
   };
 }
 

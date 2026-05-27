@@ -103,6 +103,9 @@
   </div>
 
   <div class="header-right">
+    <!-- Data Source Badge -->
+    <span class="data-source-badge demo" id="data-source-badge">● DEMO</span>
+
     <!-- Market Status -->
     <div class="market-status-group">
       <span class="market-label">KRX</span>
@@ -367,18 +370,17 @@
 <!-- ── Footer ─────────────────────────────────────────────── -->
 <footer class="site-footer">
   <p class="footer-text">
-    <span>StockVision</span> &nbsp;|&nbsp; 데이터는 데모 목적의 시뮬레이션입니다. 실제 투자에 활용하지 마세요.
-    &nbsp;|&nbsp; 매 1분마다 자동 업데이트
+    <span>StockVision</span> &nbsp;|&nbsp; 데이터 출처: Yahoo Finance &nbsp;|&nbsp; 매 1분마다 자동 업데이트
+    &nbsp;|&nbsp; 투자 참고용이며 실제 투자 결정에 단독으로 사용하지 마세요.
   </p>
 </footer>
 
 <!-- ── Update Notification ────────────────────────────────── -->
-<div id="update-notif">
-  🔄 &nbsp;시세가 업데이트되었습니다
-</div>
+<div id="update-notif">🔄 &nbsp;시세가 업데이트되었습니다</div>
 
-<!-- Scripts -->
+<!-- Scripts: mockData → api → charts → app 순서로 로드 -->
 <script src="js/mockData.js"></script>
+<script src="js/api.js"></script>
 <script src="js/charts.js"></script>
 <script src="js/app.js"></script>
 
