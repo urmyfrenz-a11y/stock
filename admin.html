@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StockVision — 관리자</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #080c18;
+      font-family: 'Segoe UI', sans-serif;
+      color: #e0e6f0;
+      padding: 32px 20px;
+    }
+
+    header {
+      max-width: 960px;
+      margin: 0 auto 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #00d4ff, #7c3aed);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .logout-btn {
+      background: #1e2a3d;
+      border: 1px solid #2a3a55;
+      color: #8a9bb8;
+      padding: 7px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background 0.2s;
+    }
+    .logout-btn:hover { background: #2a3a55; }
+
+    .container { max-width: 960px; margin: 0 auto; }
+
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .filter-btn {
+      padding: 7px 18px;
+      border-radius: 20px;
+      border: 1px solid #1e2a3d;
+      background: #0f1524;
+      color: #8a9bb8;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn.active { background: #00d4ff22; border-color: #00d4ff; color: #00d4ff; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #0f1524;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #1e2a3d;
+    }
+    thead th {
+      background: #141c2e;
+      padding: 13px 16px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      color: #5a6a8a;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    tbody tr { border-top: 1px solid #1e2a3d; }
+    tbody tr:hover { background: #141c2e; }
+    td {
+      padding: 13px 16px;
+      font-size: 13px;
+    }
+    td.mono { font-family: monospace; font-size: 12px; color: #8a9bb8; }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge.pending  { background: rgba(255,180,0,0.15);   color: #ffb400; }
+    .badge.approved { background: rgba(0,212,130,0.15);   color: #00d482; }
+    .badge.rejected { background: rgba(255,70,70,0.15);   color: #ff6b6b; }
+
+    .action-btns { display: flex; gap: 8px; }
+    .action-btn {
+      padding: 5px 14px;
+      border-radius: 6px;
+      border: none;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .action-btn:hover { opacity: 0.8; }
+    .btn-approve { background: rgba(0,212,130,0.2); color: #00d482; }
+    .btn-reject  { background: rgba(255,70,70,0.2);  color: #ff6b6b; }
+
+    .empty {
+      text-align: center;
+      padding: 48px;
+      color: #3a4a66;
+      font-size: 14px;
+    }
+
+    .login-gate {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 80vh;
+      gap: 16px;
+    }
+    .login-gate input {
+      background: #141c2e;
+      border: 1px solid #1e2a3d;
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-size: 14px;
+      color: #e0e6f0;
+      outline: none;
+      width: 280px;
+    }
+    .login-gate .btn {
+      width: 280px;
+      padding: 11px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #00d4ff, #7c3aed);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <!-- 관리자 로그인 게이트 -->
+  <div class="login-gate" id="login-gate">
+    <div style="font-size:20px;font-weight:700;background:linear-gradient(135deg,#00d4ff,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;">관리자 로그인</div>
+    <input type="password" id="admin-pw-input" placeholder="관리자 비밀번호" onkeydown="if(event.key==='Enter')checkAdminPw()" />
+    <button class="btn" onclick="checkAdminPw()">접속</button>
+    <div id="admin-login-err" style="color:#ff6b6b;font-size:13px;display:none;">비밀번호가 틀렸습니다.</div>
+  </div>
+
+  <!-- 관리자 패널 -->
+  <div id="admin-panel" style="display:none;">
+    <header>
+      <h1>StockVision 관리자</h1>
+      <button class="logout-btn" onclick="adminLogout()">로그아웃</button>
+    </header>
+    <div class="container">
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="setFilter('all', this)">전체</button>
+        <button class="filter-btn" onclick="setFilter('pending', this)">대기중</button>
+        <button class="filter-btn" onclick="setFilter('approved', this)">승인됨</button>
+        <button class="filter-btn" onclick="setFilter('rejected', this)">거절됨</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>신청일시</th>
+            <th>이메일</th>
+            <th>전화번호</th>
+            <th>비밀번호(해시)</th>
+            <th>상태</th>
+            <th>처리</th>
+          </tr>
+        </thead>
+        <tbody id="requests-tbody">
+          <tr><td colspan="6" class="empty">데이터를 불러오는 중...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
