@@ -6,230 +6,61 @@
   <title>StockVision — 관리자 패널</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Noto Sans KR', sans-serif;
-      background: #080c18;
-      color: #e2e8f0;
-      min-height: 100vh;
-    }
+    body { font-family: 'Noto Sans KR', sans-serif; background: #080c18; color: #e2e8f0; min-height: 100vh; }
 
-    /* ── 로그인 화면 ── */
-    #login-screen {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 20px;
-    }
-    .login-card {
-      width: 100%;
-      max-width: 400px;
-      background: #0f1629;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px;
-      padding: 36px 32px;
-    }
-    .login-card h2 {
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 6px;
-      background: linear-gradient(135deg, #00d4ff, #7c3aed);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+    #login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+    .login-card { width: 100%; max-width: 380px; background: #0f1629; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 36px 32px; }
+    .login-card h2 { font-size: 20px; font-weight: 700; margin-bottom: 6px; background: linear-gradient(135deg, #00d4ff, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     .login-card p { font-size: 13px; color: #64748b; margin-bottom: 28px; }
 
-    /* ── 관리자 패널 ── */
     #admin-screen { display: none; }
-
-    .admin-header {
-      background: #0f1629;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      padding: 16px 28px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .admin-header-left {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    .admin-title { font-size: 16px; font-weight: 700; color: #e2e8f0; }
-    .admin-subtitle { font-size: 12px; color: #64748b; }
-
-    .btn-logout {
-      padding: 8px 16px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 6px;
-      color: #94a3b8;
-      font-family: 'Noto Sans KR', sans-serif;
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-logout:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; }
-
+    .admin-header { background: #0f1629; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; }
+    .admin-title { font-size: 16px; font-weight: 700; }
     .admin-main { padding: 28px; }
 
-    .stats-row {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 28px;
-      flex-wrap: wrap;
-    }
-    .stat-card {
-      flex: 1;
-      min-width: 140px;
-      background: #0f1629;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 12px;
-      padding: 20px;
-    }
-    .stat-card .num {
-      font-size: 28px;
-      font-weight: 700;
-      line-height: 1;
-      margin-bottom: 6px;
-    }
-    .stat-card .label { font-size: 12px; color: #64748b; }
+    .stats-row { display: flex; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+    .stat-card { flex: 1; min-width: 130px; background: #0f1629; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px; }
+    .stat-card .num { font-size: 28px; font-weight: 700; line-height: 1; margin-bottom: 6px; }
+    .stat-card .lbl { font-size: 12px; color: #64748b; }
     .stat-pending .num { color: #fbbf24; }
     .stat-approved .num { color: #34d399; }
     .stat-rejected .num { color: #f87171; }
     .stat-total .num { color: #818cf8; }
 
-    .filter-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-    .filter-btn {
-      padding: 6px 16px;
-      border-radius: 20px;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: transparent;
-      color: #64748b;
-      font-family: 'Noto Sans KR', sans-serif;
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .filter-btn.active, .filter-btn:hover {
-      background: rgba(0,212,255,0.1);
-      border-color: rgba(0,212,255,0.3);
-      color: #00d4ff;
-    }
+    .filter-row { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    .filter-btn { padding: 6px 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: #64748b; font-family: 'Noto Sans KR', sans-serif; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+    .filter-btn.active, .filter-btn:hover { background: rgba(0,212,255,0.1); border-color: rgba(0,212,255,0.3); color: #00d4ff; }
 
-    .table-wrap {
-      background: #0f1629;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 12px;
-      overflow: hidden;
-    }
-    table { width: 100%; border-collapse: collapse; }
-    thead th {
-      padding: 14px 16px;
-      text-align: left;
-      font-size: 11px;
-      font-weight: 600;
-      color: #64748b;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      background: rgba(255,255,255,0.02);
-    }
+    .table-wrap { background: #0f1629; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 600px; }
+    thead th { padding: 14px 16px; text-align: left; font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02); }
     tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.15s; }
     tbody tr:last-child { border-bottom: none; }
     tbody tr:hover { background: rgba(255,255,255,0.03); }
     tbody td { padding: 14px 16px; font-size: 13px; }
 
-    .badge {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 12px;
-      font-size: 11px;
-      font-weight: 600;
-    }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
     .badge-pending { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
     .badge-approved { background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid rgba(52,211,153,0.3); }
     .badge-rejected { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.3); }
 
     .action-btns { display: flex; gap: 6px; }
-    .btn-approve {
-      padding: 5px 12px;
-      background: rgba(52,211,153,0.15);
-      border: 1px solid rgba(52,211,153,0.3);
-      border-radius: 6px;
-      color: #34d399;
-      font-family: 'Noto Sans KR', sans-serif;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-approve:hover { background: rgba(52,211,153,0.25); }
-    .btn-reject {
-      padding: 5px 12px;
-      background: rgba(248,113,113,0.15);
-      border: 1px solid rgba(248,113,113,0.3);
-      border-radius: 6px;
-      color: #f87171;
-      font-family: 'Noto Sans KR', sans-serif;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-reject:hover { background: rgba(248,113,113,0.25); }
+    .btn-approve { padding: 5px 12px; background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.3); border-radius: 6px; color: #34d399; font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-approve:hover { background: rgba(52,211,153,0.3); }
+    .btn-reject { padding: 5px 12px; background: rgba(248,113,113,0.15); border: 1px solid rgba(248,113,113,0.3); border-radius: 6px; color: #f87171; font-family: 'Noto Sans KR', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-reject:hover { background: rgba(248,113,113,0.3); }
+    .btn-logout { padding: 8px 16px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #94a3b8; font-family: 'Noto Sans KR', sans-serif; font-size: 13px; cursor: pointer; }
+    .btn-logout:hover { background: rgba(255,255,255,0.1); }
 
-    .pw-cell {
-      font-family: monospace;
-      font-size: 11px;
-      color: #475569;
-      max-width: 120px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .empty-row td { text-align: center; padding: 40px; color: #475569; }
-
-    /* 공통 폼 스타일 */
     .form-group { margin-bottom: 18px; }
     .form-group label { display: block; font-size: 12px; font-weight: 600; color: #94a3b8; margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .form-group input {
-      width: 100%;
-      padding: 11px 14px;
-      background: #1a2035;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      color: #e2e8f0;
-      font-family: 'Noto Sans KR', sans-serif;
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
+    .form-group input { width: 100%; padding: 11px 14px; background: #1a2035; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #e2e8f0; font-family: 'Noto Sans KR', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; }
     .form-group input:focus { border-color: #00d4ff; }
     .form-group input::placeholder { color: #475569; }
 
-    .btn-submit {
-      width: 100%;
-      padding: 13px;
-      background: linear-gradient(135deg, #00d4ff, #7c3aed);
-      border: none;
-      border-radius: 8px;
-      color: #fff;
-      font-family: 'Noto Sans KR', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
+    .btn-submit { width: 100%; padding: 13px; background: linear-gradient(135deg, #00d4ff, #7c3aed); border: none; border-radius: 8px; color: #fff; font-family: 'Noto Sans KR', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: opacity 0.2s; }
     .btn-submit:hover { opacity: 0.9; }
     .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
 
@@ -237,29 +68,12 @@
     .alert.show { display: block; }
     .alert.error { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
 
-    .toast {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      padding: 12px 20px;
-      background: #1a2035;
-      border: 1px solid rgba(52,211,153,0.3);
-      border-radius: 10px;
-      color: #34d399;
-      font-size: 13px;
-      font-weight: 600;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: all 0.3s;
-      z-index: 999;
-    }
+    .pw-cell { font-family: monospace; font-size: 11px; color: #475569; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .empty-row td { text-align: center; padding: 40px; color: #475569; }
+
+    .toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; background: #1a2035; border: 1px solid rgba(52,211,153,0.3); border-radius: 10px; color: #34d399; font-size: 13px; font-weight: 600; opacity: 0; transform: translateY(10px); transition: all 0.3s; z-index: 999; pointer-events: none; }
     .toast.show { opacity: 1; transform: translateY(0); }
     .toast.error { border-color: rgba(248,113,113,0.3); color: #f87171; }
-
-    @media (max-width: 700px) {
-      .pw-col, .pw-head { display: none; }
-      .admin-main { padding: 16px; }
-    }
   </style>
 </head>
 <body>
@@ -268,18 +82,14 @@
 <div id="login-screen">
   <div class="login-card">
     <h2>관리자 로그인</h2>
-    <p>Supabase 관리자 계정으로 로그인하세요.</p>
+    <p>관리자 비밀번호를 입력하세요.</p>
     <div class="alert" id="admin-alert"></div>
     <form onsubmit="handleAdminLogin(event)">
       <div class="form-group">
-        <label>이메일</label>
-        <input type="email" id="admin-email" placeholder="admin@example.com" required />
-      </div>
-      <div class="form-group">
         <label>비밀번호</label>
-        <input type="password" id="admin-password" placeholder="비밀번호" required />
+        <input type="password" id="admin-pw" placeholder="관리자 비밀번호" required autofocus />
       </div>
-      <button type="submit" class="btn-submit" id="admin-login-btn">관리자 로그인</button>
+      <button type="submit" class="btn-submit" id="admin-login-btn">로그인</button>
     </form>
   </div>
 </div>
@@ -287,45 +97,25 @@
 <!-- 관리자 패널 -->
 <div id="admin-screen">
   <div class="admin-header">
-    <div class="admin-header-left">
-      <div>
-        <div class="admin-title">관리자 패널</div>
-        <div class="admin-subtitle" id="admin-email-display"></div>
-      </div>
-    </div>
-    <div style="display:flex;gap:10px;align-items:center;">
-      <button class="btn-logout" onclick="refreshData()">새로고침</button>
-      <button class="btn-logout" onclick="handleLogout()">로그아웃</button>
+    <div class="admin-title">관리자 패널</div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-logout" onclick="loadData()">새로고침</button>
+      <button class="btn-logout" onclick="logout()">로그아웃</button>
     </div>
   </div>
-
   <div class="admin-main">
     <div class="stats-row">
-      <div class="stat-card stat-total">
-        <div class="num" id="stat-total">0</div>
-        <div class="label">전체 신청</div>
-      </div>
-      <div class="stat-card stat-pending">
-        <div class="num" id="stat-pending">0</div>
-        <div class="label">대기 중</div>
-      </div>
-      <div class="stat-card stat-approved">
-        <div class="num" id="stat-approved">0</div>
-        <div class="label">승인됨</div>
-      </div>
-      <div class="stat-card stat-rejected">
-        <div class="num" id="stat-rejected">0</div>
-        <div class="label">거절됨</div>
-      </div>
+      <div class="stat-card stat-total"><div class="num" id="stat-total">0</div><div class="lbl">전체</div></div>
+      <div class="stat-card stat-pending"><div class="num" id="stat-pending">0</div><div class="lbl">대기 중</div></div>
+      <div class="stat-card stat-approved"><div class="num" id="stat-approved">0</div><div class="lbl">승인됨</div></div>
+      <div class="stat-card stat-rejected"><div class="num" id="stat-rejected">0</div><div class="lbl">거절됨</div></div>
     </div>
-
     <div class="filter-row">
-      <button class="filter-btn active" onclick="filterData('all')">전체</button>
-      <button class="filter-btn" onclick="filterData('pending')">대기 중</button>
-      <button class="filter-btn" onclick="filterData('approved')">승인됨</button>
-      <button class="filter-btn" onclick="filterData('rejected')">거절됨</button>
+      <button class="filter-btn active" onclick="filterData('all', this)">전체</button>
+      <button class="filter-btn" onclick="filterData('pending', this)">대기 중</button>
+      <button class="filter-btn" onclick="filterData('approved', this)">승인됨</button>
+      <button class="filter-btn" onclick="filterData('rejected', this)">거절됨</button>
     </div>
-
     <div class="table-wrap">
       <table>
         <thead>
@@ -333,14 +123,12 @@
             <th>신청일시</th>
             <th>이메일</th>
             <th>전화번호</th>
-            <th class="pw-head">비밀번호 해시</th>
+            <th>비밀번호 해시</th>
             <th>상태</th>
-            <th>승인/거절</th>
+            <th>처리</th>
           </tr>
         </thead>
-        <tbody id="requests-tbody">
-          <tr class="empty-row"><td colspan="6">데이터를 불러오는 중...</td></tr>
-        </tbody>
+        <tbody id="tbody"></tbody>
       </table>
     </div>
   </div>
@@ -349,78 +137,66 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const SUPABASE_URL = 'https://ywofxncimmukmjldcyuk.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3b2Z4bmNpbW11a21qbGRjeXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNjU3ODUsImV4cCI6MjA5MTc0MTc4NX0.3IRKsospjDtow4bDcafxfuk1_xi7MYgD29pr26DkTQg';
-
-  const { createClient } = supabase;
-  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+  const API = 'https://ywofxncimmukmjldcyuk.supabase.co/functions/v1/admin-api';
+  let pw = '';
   let allData = [];
   let currentFilter = 'all';
 
   // 세션 복구
-  sb.auth.onAuthStateChange((event, session) => {
-    if (session) {
-      showAdminPanel(session.user.email);
-    } else {
-      document.getElementById('login-screen').style.display = 'flex';
-      document.getElementById('admin-screen').style.display = 'none';
-    }
-  });
+  const saved = sessionStorage.getItem('admin_pw');
+  if (saved) { pw = saved; showPanel(); }
 
   async function handleAdminLogin(e) {
     e.preventDefault();
-    const email = document.getElementById('admin-email').value;
-    const password = document.getElementById('admin-password').value;
+    const input = document.getElementById('admin-pw').value;
     const btn = document.getElementById('admin-login-btn');
+    btn.disabled = true; btn.textContent = '확인 중...';
 
-    btn.disabled = true;
-    btn.textContent = '로그인 중...';
+    const res = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'login', password: input })
+    }).then(r => r.json()).catch(() => ({ success: false, message: '네트워크 오류' }));
 
-    const { data, error } = await sb.auth.signInWithPassword({ email, password });
-
-    if (error) {
+    if (res.success) {
+      pw = input;
+      sessionStorage.setItem('admin_pw', pw);
+      showPanel();
+    } else {
       const el = document.getElementById('admin-alert');
       el.className = 'alert error show';
-      el.textContent = '이메일 또는 비밀번호가 올바르지 않습니다.';
-      btn.disabled = false;
-      btn.textContent = '관리자 로그인';
-      return;
+      el.textContent = res.message;
+      btn.disabled = false; btn.textContent = '로그인';
     }
-
-    showAdminPanel(data.user.email);
   }
 
-  function showAdminPanel(email) {
+  function showPanel() {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('admin-screen').style.display = 'block';
-    document.getElementById('admin-email-display').textContent = email;
     loadData();
   }
 
-  async function handleLogout() {
-    await sb.auth.signOut();
+  function logout() {
+    sessionStorage.removeItem('admin_pw');
+    pw = '';
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('admin-screen').style.display = 'none';
+    document.getElementById('admin-pw').value = '';
   }
 
   async function loadData() {
-    const { data, error } = await sb
-      .from('signup_requests')
-      .select('*')
-      .order('created_at', { ascending: false });
+    document.getElementById('tbody').innerHTML = '<tr class="empty-row"><td colspan="6">불러오는 중...</td></tr>';
+    const res = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'list', password: pw })
+    }).then(r => r.json()).catch(() => ({ success: false }));
 
-    if (error) {
-      showToast('데이터 로드 실패: ' + error.message, true);
-      return;
-    }
-
-    allData = data || [];
+    if (!res.success) { toast('데이터 로드 실패', true); return; }
+    allData = res.data || [];
     updateStats();
     renderTable(currentFilter);
   }
-
-  function refreshData() { loadData(); }
 
   function updateStats() {
     document.getElementById('stat-total').textContent = allData.length;
@@ -429,66 +205,56 @@
     document.getElementById('stat-rejected').textContent = allData.filter(r => r.status === 'rejected').length;
   }
 
-  function filterData(filter) {
+  function filterData(filter, btn) {
     currentFilter = filter;
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    event.target.classList.add('active');
+    btn.classList.add('active');
     renderTable(filter);
   }
 
   function renderTable(filter) {
     const rows = filter === 'all' ? allData : allData.filter(r => r.status === filter);
-    const tbody = document.getElementById('requests-tbody');
-
-    if (rows.length === 0) {
-      tbody.innerHTML = '<tr class="empty-row"><td colspan="6">신청 내역이 없습니다.</td></tr>';
-      return;
-    }
+    const tbody = document.getElementById('tbody');
+    if (!rows.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="6">신청 내역이 없습니다.</td></tr>'; return; }
 
     tbody.innerHTML = rows.map(r => {
       const date = new Date(r.created_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
-      const badgeClass = { pending: 'badge-pending', approved: 'badge-approved', rejected: 'badge-rejected' }[r.status];
-      const badgeLabel = { pending: '대기 중', approved: '승인됨', rejected: '거절됨' }[r.status];
-      const shortHash = r.password_hash ? r.password_hash.substring(0, 20) + '...' : '-';
+      const badgeMap = { pending: ['badge-pending','대기 중'], approved: ['badge-approved','승인됨'], rejected: ['badge-rejected','거절됨'] };
+      const [bc, bl] = badgeMap[r.status];
+      const hash = r.password_hash ? r.password_hash.substring(0, 16) + '...' : '-';
 
-      const actionBtns = r.status === 'pending'
-        ? `<div class="action-btns">
-            <button class="btn-approve" onclick="updateStatus('${r.id}', 'approved')">승인</button>
-            <button class="btn-reject" onclick="updateStatus('${r.id}', 'rejected')">거절</button>
-           </div>`
-        : r.status === 'approved'
-        ? `<div class="action-btns"><button class="btn-reject" onclick="updateStatus('${r.id}', 'rejected')">거절로 변경</button></div>`
-        : `<div class="action-btns"><button class="btn-approve" onclick="updateStatus('${r.id}', 'approved')">승인으로 변경</button></div>`;
+      let btns = '';
+      if (r.status === 'pending') {
+        btns = `<div class="action-btns"><button class="btn-approve" onclick="update('${r.id}','approved')">승인</button><button class="btn-reject" onclick="update('${r.id}','rejected')">거절</button></div>`;
+      } else if (r.status === 'approved') {
+        btns = `<div class="action-btns"><button class="btn-reject" onclick="update('${r.id}','rejected')">거절로 변경</button></div>`;
+      } else {
+        btns = `<div class="action-btns"><button class="btn-approve" onclick="update('${r.id}','approved')">승인으로 변경</button></div>`;
+      }
 
-      return `
-        <tr>
-          <td style="color:#94a3b8;font-size:12px;">${date}</td>
-          <td>${r.email}</td>
-          <td>${r.phone}</td>
-          <td class="pw-cell pw-col" title="${r.password_hash}">${shortHash}</td>
-          <td><span class="badge ${badgeClass}">${badgeLabel}</span></td>
-          <td>${actionBtns}</td>
-        </tr>`;
+      return `<tr>
+        <td style="color:#94a3b8;font-size:12px;">${date}</td>
+        <td>${r.email}</td>
+        <td>${r.phone}</td>
+        <td class="pw-cell" title="${r.password_hash}">${hash}</td>
+        <td><span class="badge ${bc}">${bl}</span></td>
+        <td>${btns}</td>
+      </tr>`;
     }).join('');
   }
 
-  async function updateStatus(id, status) {
-    const { error } = await sb
-      .from('signup_requests')
-      .update({ status })
-      .eq('id', id);
+  async function update(id, status) {
+    const res = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'update', password: pw, id, status })
+    }).then(r => r.json()).catch(() => ({ success: false }));
 
-    if (error) {
-      showToast('업데이트 실패: ' + error.message, true);
-      return;
-    }
-
-    const label = status === 'approved' ? '승인' : '거절';
-    showToast(`${label} 처리되었습니다.`);
-    await loadData();
+    if (res.success) { toast(status === 'approved' ? '승인되었습니다.' : '거절되었습니다.'); loadData(); }
+    else toast('처리 실패', true);
   }
 
-  function showToast(msg, isError = false) {
+  function toast(msg, isError = false) {
     const el = document.getElementById('toast');
     el.textContent = msg;
     el.className = 'toast show' + (isError ? ' error' : '');
