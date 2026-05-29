@@ -55,10 +55,15 @@ async function yfFetch(url, cacheTTL = 30_000) {
 }
 
 // ── 미들웨어 ───────────────────────────────────────────────────
-app.use(express.static(path.join(__dirname)));   // index.html + js/css
 app.use((req, res, next) => {
   res.setHeader('Cache-Control', 'no-store');
   next();
+});
+app.use(express.static(path.join(__dirname)));   // index.html + js/css
+
+// ── 루트 리다이렉트 ────────────────────────────────────────────
+app.get('/', (req, res) => {
+  res.redirect('/auth.html');
 });
 
 // ── GET /api/quotes  (현재 시세 스냅샷) ───────────────────────
