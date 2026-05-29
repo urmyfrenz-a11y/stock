@@ -116,6 +116,9 @@
       <span class="market-status-badge closed" id="market-us">—</span>
     </div>
 
+    <!-- Logout -->
+    <button id="logout-btn" onclick="(function(){localStorage.removeItem('sv_user');window.location.href='auth.html';})()" style="padding:6px 14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#94a3b8;font-family:inherit;font-size:12px;cursor:pointer;">로그아웃</button>
+
     <!-- Clock -->
     <div class="header-clock">
       <div id="current-date">—</div>
@@ -379,6 +382,14 @@
 <div id="update-notif">🔄 &nbsp;시세가 업데이트되었습니다</div>
 
 <!-- Scripts: mockData → api → charts → app 순서로 로드 -->
+<script>
+  // 로그인 여부 확인 — 비로그인 시 auth 페이지로 이동
+  (function() {
+    if (!localStorage.getItem('sv_user')) {
+      window.location.replace('auth.html');
+    }
+  })();
+</script>
 <script src="js/mockData.js"></script>
 <script src="js/api.js"></script>
 <script src="js/charts.js"></script>
